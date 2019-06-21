@@ -9,7 +9,7 @@ readonly TMP_FOLDER=${4}
 readonly TEST_BUILD_NUMBER=${5}
 
 scripts_dir=$(dirname $0)
-output_dir=${scripts_dir}
+output_dir=$TMP_FOLDER
 
 if [[ ! -z "${benchmark_results_dir}" ]]; then
   output_dir="${benchmark_results_dir}"

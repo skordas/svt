@@ -2,7 +2,6 @@
 test_project_name: storage-test
 test_project_number: 10
 delete_test_project_before_test: true
-tmp_folder: /tmp/jenkins-test
 MEMORY_LIMIT: 6144Mi
 VOLUME_CAPACITY: 10Gi
 STORAGE_CLASS_NAME: glusterfs-storage-block
