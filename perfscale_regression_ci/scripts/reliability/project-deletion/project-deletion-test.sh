@@ -5,13 +5,16 @@
 ## Description: Tests for deleting priojects under different conditions.                ##
 ## Polarion Test case: OCP-18155                                                        ##
 ## https://polarion.engineering.redhat.com/polarion/#/project/OSE/workitem?id=OCP-18155 ##
+## Run:                                                                                 ##
+## ./project-deletion-test.sh delete_node                                               ##
+##           to run test project deletion where node where pods are running are down    ##
 ##########################################################################################
 
 ### TODO - REMOVE THIS SECTION BEFORE PR ###
 # - [x] add exports - or just get the names from exported variables.
 # - [x] Load the cluster
-# - [ ] get number of nodes before test - to compare after test
-# - [ ] get node to put down
+# - [x] get number of nodes before test - to compare after test
+# - [x] get node to put down
 # - [ ] check if on that node is down
 # - [ ] remove the node - (delete machine)
 # - [x] start deletion
@@ -23,16 +26,29 @@
 # - [ ] Remove comment from set -x
 # - [ ] Change set -x as parrametter - will be used in prow - not here.
 # - [ ] change for some timouts to be more realistic.
+# - [ ] check all logs - to not leave some silliness 
 ############### END OF TODO ################
 
-# set -o xtrace
+set -x
+set -e
+
+test=$1
+tests=("delete_node")
+
+## STEP 0 - before - checking if correct parameters is passed
+if [[ ${tests[*]} =~ $test ]]; then
+	echo "OK"
+else
+	echo "Please read the description of the script and pass correct parameter"
+	exit 1
+fi
 
 # NAME - used for labeling project
 # NAMESPACE - name for projects
 # PARAMETERS - number of projects to delete
 # DELETION_TIMEOUT - Time out for deletion of projects in minutes
 
-export NAME=${NAME:-"project-deletion-node-is-down"}
+export NAME=${NAME:-"project-deletion-tests"}
 export NAMESPACE=${NAMESPACE:-"project-to-delete"}
 export PARAMETERS=${PARAMETERS:-15}
 export DELETION_TIMEOUT=${DELETION_TIMEOUT:-2}
@@ -47,8 +63,13 @@ pushd ../../scalability/ || exit
 popd || exit
 
 ## STEP 2 - Break something!
-
-
+case $test in
+	delete_node)
+		echo "Running test, when node, where pods are running is down"
+	  number_or_running_worker_nodes=$(oc get nodes | grep worker | grep -c Ready)
+		./break-the-machine.sh
+		;;
+esac
 
 ## STEP 3 - Delete projects
 echo "Deleting projects"
@@ -57,6 +78,8 @@ oc project default
 oc delete project -l kube-burner-job="$NAME" --wait=false
 
 timeout=$(date -d "+$DELETION_TIMEOUT minutes" +%s)
+
+set +e
 while sleep $sleep_time; do
 	number_of_terminating_projects=$(oc get projects | grep -c Terminating)
 	echo "Number of Terminating projects: $number_of_terminating_projects"
@@ -74,3 +97,13 @@ while sleep $sleep_time; do
   	continue
 	fi
 done
+set -e
+
+## STEP 4 - Be sure what you brake before deletion will work fine before moving forward.
+case $test in
+  delete_node)
+  	echo "Checking if all nodes are available."
+  	./break-the-machine-recovery.sh "$number_or_running_worker_nodes"
+  	;;
+esac
+
