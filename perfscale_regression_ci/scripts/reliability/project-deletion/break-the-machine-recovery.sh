@@ -10,6 +10,10 @@
 
 # Variables are exported in ./project-deletion-test.sh or in PROW ref file.
 
+function log {
+    echo -e "[$(date "+%F %T")]: $*"
+}
+
 number_of_expected_working_nodes=$1
 wait_timeout=10 # Timeout in minutes
 sleep_time=30 # Sleep time in seconds between checks.
@@ -18,18 +22,18 @@ timeout=$(date -d "+$wait_timeout minutes" +%s)
 
 while sleep $sleep_time; do
   if [[ $number_of_expected_working_nodes -eq $(oc get nodes | grep worker | grep -c Ready) ]]; then
-    echo "All nodes are back"
+    log "All nodes are back"
     break
   else
     if [[ $timeout < $(date +%s) ]]; then
-      echo "Not all nodes are ready"
-      echo "Test failed"
+      log "Not all nodes are ready"
+      log "Test failed"
       oc get nodes
       oc get machineset -n openshift-machine-api
       oc get machines -n openshift-machine-api
       exit 1
     fi
-    echo "Sleep $sleep_time before next check."
+    log "Sleep $sleep_time seconds before next check."
     continue
   fi
 done
