@@ -9,13 +9,17 @@
 ##########################################################################################
 
 # Variables are exported in ../project-deletion-test.sh or in PROW ref file.
-
+xtrace=$1
 wait_timeout=5 # Timeout in minutes
 sleep_time=5 # Sleep time in seconds befteew checks
 
 function log {
     echo -e "[$(date "+%F %T")]: $*"
 }
+
+if [[ $xtrace != "true" ]]; then
+  set -x
+fi
 
 log "Getting machine where pods is running"
 node_name=$(oc get pods -n "${NAMESPACE}-1" -o jsonpath='{.items[0].spec.nodeName}')
