@@ -13,47 +13,29 @@
 ##########################################################################################
 
 ### TODO - REMOVE THIS SECTION BEFORE PR ###
-# - [x] remove the node - (delete machine)
-# - [x] check if on that node is down
-# - [x] check if all nodes are back - if not - Test Failed.
-# - [x] Add something for logging instead of echo:
-# - [x] Check if all steps are in correct order
-# - [x] Change set -x as parrametter - will be used in prow - not here. - to not make mess - ex. if $2 is true - then do not set up
 # - [ ] change for some timouts to be more realistic.
 # - [ ] check all logs - to not leave some silliness 
 # - [ ] With every new added test - add description into header of this script.
-# - [ ] add test when master-api is down or etcd
-# - [ ] add test when builds are in progress
-# - [ ] add test when changing machineset - probably this one is covered by the first one - when node is not available.
 # - [ ] remove passing number_or_running_worker_nodes into break the macihne script - remove it also in the script
 # - [ ] add info at the end that we finished whole test with sucess
 # - [ ] add some info into break the machine recovery info that we expecting at the beggining (add log)
 # - [ ] add log if failed - info about passed time
+# - [ ] add set -x -e into breakers
+# - [x] move breakers/spoilers to directory bellow
+# - [ ] add to brekers - if second parameter exist then set -x
+# - [ ] add test when master-api is down or etcd
+# - [ ] add test when builds are in progress
+# - [ ] add test when changing machineset - probably this one is covered by the first one - when node is not available.
+# - [ ] add step in wreckers - at the beginning - log the thing which will be done in this script
+# - [ ] pass true if set -x in the wreckers
 ############### END OF TODO ################
 
 test=$1
 xtrace=$2
 tests=("delete_node")
 
-if [[ $xtrace != "true" ]]; then
-  set -x
-fi
-
-set -e
-
-function log {
-    echo -e "[$(date "+%F %T")]: $*"
-}
-
-## STEP 0 - before - checking if correct parameters is passed
-if [[ ${tests[*]} =~ $test ]]; then
-	log "========  Test to run: $test  ===="
-else
-	log "Please read the description of the script and pass correct parameter"
-	exit 1
-fi
-
 declare number_or_running_worker_nodes # used for test when node where pods are is not available
+sleep_time=5 # Sleep time in seconds between checks
 
 # NAME - used for labeling project
 # NAMESPACE - name for projects
@@ -63,10 +45,25 @@ declare number_or_running_worker_nodes # used for test when node where pods are 
 export NAME=${NAME:-"project-deletion-tests"}
 export NAMESPACE=${NAMESPACE:-"project-to-delete"}
 export PARAMETERS=${PARAMETERS:-15}
-export DELETION_TIMEOUT=${DELETION_TIMEOUT:-2}
+export DELETION_TIMEOUT=${DELETION_TIMEOUT:-5}
 
-# Sleep time in seconds between checks
-sleep_time=5
+function log {
+    echo -e "[$(date "+%F %T")]: $*"
+}
+
+if [[ $xtrace != "true" ]]; then
+  set -x
+fi
+
+set -e
+
+## STEP 0 - before - checking if correct parameters is passed
+if [[ ${tests[*]} =~ $test ]]; then
+	log "========  Test to run: $test  ===="
+else
+	log "Please read the description of the script and pass correct parameter"
+	exit 1
+fi
 
 ## STEP 1 - Load cluster
 log "Loading cluster...."
@@ -79,7 +76,7 @@ case $test in
 	delete_node)
 		log "Running test: Delete projects - node where pods are running is down."
 	  number_or_running_worker_nodes=$(oc get nodes | grep worker | grep -c Ready)
-		./break-the-machine.sh "$number_or_running_worker_nodes"
+		./wreckers/break-the-machine.sh "$number_or_running_worker_nodes"
 		;;
 esac
 
@@ -115,7 +112,7 @@ set -e
 case $test in
   delete_node)
   	log "Checking if all nodes are available."
-  	./break-the-machine-recovery.sh "$number_or_running_worker_nodes"
+  	./wreckers/break-the-machine-recovery.sh "$number_or_running_worker_nodes"
   	;;
 esac
 

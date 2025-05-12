@@ -8,15 +8,15 @@
 ## https://polarion.engineering.redhat.com/polarion/#/project/OSE/workitem?id=OCP-18155 ##
 ##########################################################################################
 
-# Variables are exported in ./project-deletion-test.sh or in PROW ref file.
-
-function log {
-    echo -e "[$(date "+%F %T")]: $*"
-}
+# Variables are exported in ../project-deletion-test.sh or in PROW ref file.
 
 number_of_expected_working_nodes=$1
 wait_timeout=10 # Timeout in minutes
 sleep_time=30 # Sleep time in seconds between checks.
+
+function log {
+    echo -e "[$(date "+%F %T")]: $*"
+}
 
 timeout=$(date -d "+$wait_timeout minutes" +%s)
 
