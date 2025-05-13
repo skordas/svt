@@ -9,15 +9,15 @@
 ##########################################################################################
 
 # Variables are exported in ../project-deletion-test.sh or in PROW ref file.
-xtrace=$1
+no_xtrace=$1
 wait_timeout=5 # Timeout in minutes
 sleep_time=5 # Sleep time in seconds befteew checks
 
 function log {
-    echo -e "[$(date "+%F %T")]: $*"
+  echo -e "[$(date "+%F %T")]: $*"
 }
 
-if [[ $xtrace != "true" ]]; then
+if [[ $no_xtrace != "true" ]]; then
   set -x
 fi
 

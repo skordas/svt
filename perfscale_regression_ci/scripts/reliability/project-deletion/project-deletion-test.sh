@@ -13,33 +13,30 @@
 ##########################################################################################
 
 ### TODO - REMOVE THIS SECTION BEFORE PR ###
-# - [x] change for some timouts to be more realistic.
-# - [x] remove passing number_or_running_worker_nodes into break the macihne script - remove it also in the script
-# - [x] add info at the end that we finished whole test with sucess
-# - [x] add some info into break the machine recovery info that we expecting at the beggining (add log)
-# - [x] add set -x -e into breakers
-# - [x] move breakers/spoilers to directory bellow
-# - [x] add to brekers - if second parameter exist then set -x
-# - [x] Don't break at step 3 - here do some debuging - first recover - then fail the test - add variable - PASSED_DELETION_TEST
-# - [x] add test when master-api is down or etcd
+# - [x] check tabs in log function in every script
+# - [x] export add NUMBER OF ETCD PODS
+# - [x] in break the etcd script get number of working pods / or if etcd pod is working o this node
+# - [x] in break the etcd recovery scrip get number of working pods / or even better - check if etcd is working on that node. 
+# - [x] maybe in break the etcd I need also export number of pods - to be sure the same number is at the end
 # - [ ] in break the etcd script figure out how to get name of master node.
-# - [ ] in break the etcd script get number of working pods / or if etcd pod is working o this node
-# - [ ] in break the etcd recovery scrip get number of working pods / or even better - check if etcd is working on that node. 
 # - [ ] Script etcd is down!
-# - [ ] check tabs in log function in every script
 # - [ ] Check if all ETCD can be down.
 # - [ ] add test when builds are in progress
 # - [ ] add test when changing machineset - probably this one is covered by the first one - when node is not available.
 # - [ ] add step in wreckers - at the beginning - log the thing which will be done in this script
-# - [ ] pass true if set -x in the wreckers
+# - [x] pass true if set -x in the wreckers
 # - [ ] check all logs - to not leave some silliness 
 # - [ ] With every new added test - add description into header of this script.
 # - [ ] Instead of getting value of number_or_running_worker_nodes - export that value in script to be available to all subprocesses 
 #       and store that as 'global' variable.
+# - [ ] Continue with THE test not just test.
+# - [ ] check exit code of every break script - if something wrong - then finish the test before even running it
+# - [ ] add clean up script - add it before loading cluster - that can be some leftovers
+# - [ ] Add 'timeout' comment to log when it is happening - not only Test failed - explain that timeout finished the script
 ############### END OF TODO ################
 
 test=$1
-xtrace=$2
+no_xtrace=$2
 tests=("delete_node" "etcd_is_down")
 
 declare sleep_time=5 # Sleep time in seconds between checks
@@ -47,16 +44,17 @@ declare number_or_running_worker_nodes # used for test when node where pods are 
 export delete_project_test_passed=false # To store main test result through the script.
 
 export MASTER_NODE_WITH_ETCD="" # Used for passing name of master node with ETCD to put down - later used in recovery script.
+export NUMBER_OF_ETCD_PODS="" # Used for passing number of ETCD nodes - later used in recovery script. 
 export NAME=${NAME:-"project-deletion-tests"} # Used for labeling project
 export NAMESPACE=${NAMESPACE:-"project-to-delete"} # Name for projects
 export PARAMETERS=${PARAMETERS:-15} # Number of projects to delete
 export DELETION_TIMEOUT=${DELETION_TIMEOUT:-5} # Time out for deletion of projects in minutes
 
 function log {
-    echo -e "[$(date "+%F %T")]: $*"
+  echo -e "[$(date "+%F %T")]: $*"
 }
 
-if [[ $xtrace != "true" ]]; then
+if [[ $no_xtrace != "true" ]]; then
   set -x
 fi
 
@@ -79,11 +77,11 @@ case $test in
 	delete_node)
 		log "Running test: Delete projects - node where pods are running is down."
 	  number_or_running_worker_nodes=$(oc get nodes | grep worker | grep -c Ready)
-		./wreckers/break-the-machine.sh "$xtrace"
+		./wreckers/break-the-machine.sh "$no_xtrace"
 		;;
 	etcd_is_down)
 		log "Running test: Delete projects - one of etcd is down"
-		./wreckers/break-the-etcd.sh "$xtrace"
+		./wreckers/break-the-etcd.sh "$no_xtrace"
 		;;
 esac
 
@@ -116,11 +114,11 @@ done
 case $test in
   delete_node)
   	log "Checking if all nodes are available."
-  	./wreckers/break-the-machine-recovery.sh "$number_or_running_worker_nodes" "$xtrace"
+  	./wreckers/break-the-machine-recovery.sh "$number_or_running_worker_nodes" "$no_xtrace"
   	;;
   etcd_is_down)
   	log "Recover ETCD failover"
-  	./wreckers/break-the-etcd-recovery.sh "$xtrace"
+  	./wreckers/break-the-etcd-recovery.sh "$no_xtrace"
   	;;
 esac
 

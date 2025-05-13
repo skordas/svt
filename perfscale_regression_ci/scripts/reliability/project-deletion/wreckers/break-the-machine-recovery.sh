@@ -11,15 +11,15 @@
 # Variables are exported in ../project-deletion-test.sh or in PROW ref file.
 
 number_of_expected_working_nodes=$1
-xtrace=$2
+no_xtrace=$2
 wait_timeout=10 # Timeout in minutes
 sleep_time=30 # Sleep time in seconds between checks.
 
 function log {
-    echo -e "[$(date "+%F %T")]: $*"
+  echo -e "[$(date "+%F %T")]: $*"
 }
 
-if [[ $xtrace != "true" ]]; then
+if [[ $no_xtrace != "true" ]]; then
   set -x
 fi
 

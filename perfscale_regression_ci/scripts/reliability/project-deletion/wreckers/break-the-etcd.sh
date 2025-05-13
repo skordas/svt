@@ -11,9 +11,9 @@
 # Variables exported in ../project-deletion-test.sh or in PROW ref file.
 # MASTER_NODE_WITH_ETCD
 
-xtrace=$1
-sleep_time=5 # Sleep time in second between checks
-wait_timeout=2 # Timeout in minutes
+no_xtrace=$1
+sleep_time=5 # Sleep time in seconds between checks
+wait_timeout=5 # Timeout in minutes
 
 function log {
   echo -e "[$(date "+%F %T")]: $*"
@@ -24,14 +24,17 @@ function get_number_available_etcd_pods {
   echo "$number_of_pods"
 }
 
-if [[ $xtrace != "true" ]]; then
+if [[ $no_xtrace != "true" ]]; then
   set -x
 fi
 
 MASTER_NODE_WITH_ETCD=$(oc get nodes -n -o jsonpath='{.items[0].spec.nodeName}') # GET MASTER NODE NAME in correct way 
 export MASTER_NODE_WITH_ETCD
 
-number_of_etcd_pods=get_number_available_etcd_pods
+NUMBER_OF_ETCD_PODS=get_number_available_etcd_pods
+export NUMBER_OF_ETCD_PODS
+
+log "Current available ETCD pods: $NUMBER_OF_ETCD_PODS"
 log "Moving out etcd-pod manifest..."
 oc debug node/"$MASTER_NODE_WITH_ETCD" -- chroot /host mv /etc/kubernetes/manifests/etcd-pod.yaml /root/
 
@@ -39,4 +42,17 @@ timeout=$(date -d "+$wait_timeout minutes" +%s)
 
 while sleep $sleep_time; do
   available_etcd_pods=get_number_available_etcd_pods
+  log "Current available ETCD pods: $available_etcd_pods"
+  if [[ $available_etcd_pods -eq 0 ]]; then
+    log "ETCD on $MASTER_NODE_WITH_ETCD node is down"
+    log "Continue with the test..."
+    break
+  else
+    if [[ $timeout < $(date +%s) ]]; then
+      log "ETCD on $MASTER_NODE_WITH_ETCD node is not down"
+      log "Test failed"
+      exit 1
+    fi
+    log "Sleep $sleep_time seconds before next check."
+  fi
 done
