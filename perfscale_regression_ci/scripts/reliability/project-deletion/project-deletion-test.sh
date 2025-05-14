@@ -13,18 +13,12 @@
 ##########################################################################################
 
 ### TODO - REMOVE THIS SECTION BEFORE PR ###
-# - [x] check tabs in log function in every script
-# - [x] export add NUMBER OF ETCD PODS
-# - [x] in break the etcd script get number of working pods / or if etcd pod is working o this node
-# - [x] in break the etcd recovery scrip get number of working pods / or even better - check if etcd is working on that node. 
-# - [x] maybe in break the etcd I need also export number of pods - to be sure the same number is at the end
 # - [ ] in break the etcd script figure out how to get name of master node.
 # - [ ] Script etcd is down!
 # - [ ] Check if all ETCD can be down.
 # - [ ] add test when builds are in progress
 # - [ ] add test when changing machineset - probably this one is covered by the first one - when node is not available.
 # - [ ] add step in wreckers - at the beginning - log the thing which will be done in this script
-# - [x] pass true if set -x in the wreckers
 # - [ ] check all logs - to not leave some silliness 
 # - [ ] With every new added test - add description into header of this script.
 # - [ ] Instead of getting value of number_or_running_worker_nodes - export that value in script to be available to all subprocesses 
