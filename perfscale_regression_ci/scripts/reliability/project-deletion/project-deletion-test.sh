@@ -13,9 +13,10 @@
 ##########################################################################################
 
 ### TODO - REMOVE THIS SECTION BEFORE PR ###
-# - [ ] in break the etcd script figure out how to get name of master node.
-# - [ ] Script etcd is down!
-# - [ ] Check if all ETCD can be down.
+# - [x] in break the etcd script figure out how to get name of master node.
+# - [x] Script etcd is down!
+# - [x] Check if all ETCD can be down.
+# - [ ] Remove all comments from break-the-etcd scripts
 # - [ ] add test when builds are in progress
 # - [ ] add test when changing machineset - probably this one is covered by the first one - when node is not available.
 # - [ ] add step in wreckers - at the beginning - log the thing which will be done in this script
