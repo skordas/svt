@@ -13,6 +13,12 @@ cp $CONFIG_TEMPLATE config/apf_run.yaml
 sed -i "s/BASENAME/$BASENAME/g" config/apf_run.yaml
 sed -i "s/NUM_PROJECTS/$NUM_PROJECTS/g" config/apf_run.yaml
 
+KUBECONF=""
+if [ -f "${SHARED_DIR}/kubeconfig" ]; then
+  echo "RUNNIG IN PROW ENVIRONMENT"
+  KUBECONF="--kubeconfig ${SHARED_DIR}/kubeconfig"
+fi
+
 date
 SECONDS=0
 python3 -m venv ./venv
@@ -20,7 +26,7 @@ source ./venv/bin/activate
 pip --version
 pip install --upgrade pip
 pip install -r ./requirements.txt
-./cluster-loader.py -f config/apf_run.yaml -p "$PARALLEL"
+./cluster-loader.py $KUBECONF -f config/apf_run.yaml -p "$PARALLEL"
 deactivate
 
 duration=$SECONDS
