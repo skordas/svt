@@ -26,7 +26,7 @@ source ./venv/bin/activate
 pip --version
 pip install --upgrade pip
 pip install -r ./requirements.txt
-./cluster-loader.py $KUBECONF -f config/apf_run.yaml -p "$PARALLEL"
+./cluster-loader.py $KUBECONF -f config/apf_run.yaml -p "$PARALLEL" -v
 deactivate
 
 duration=$SECONDS
