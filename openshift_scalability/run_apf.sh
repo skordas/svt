@@ -1,8 +1,8 @@
 #!/bin/bash
 
 BASENAME=${1:-mva}
-NUM_PROJECTS=${2:-250}
-PARALLEL=${3:-10}
+NUM_PROJECTS=${2:-25}
+PARALLEL=${3:-3}
 
 CONFIG_TEMPLATE=config/apf_template.yaml
 deletion_time=30
@@ -20,6 +20,16 @@ if [ -f "${SHARED_DIR}/kubeconfig" ]; then
 fi
 
 date
+
+echo '-----Directory-----'
+pwd
+echo ''
+echo '----Files ----'
+ls
+echo '----check this file: ./content/build-config-template.json'
+cat ./content/build-config-template.json
+echo '-------------------'
+
 SECONDS=0
 python3 -m venv ./venv
 source ./venv/bin/activate
