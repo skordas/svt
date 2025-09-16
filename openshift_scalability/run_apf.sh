@@ -8,6 +8,7 @@ CONFIG_TEMPLATE=config/apf_template.yaml
 deletion_time=30
 sleep=10
 
+pushd $PWD
 cp $CONFIG_TEMPLATE config/apf_run.yaml
 
 sed -i "s/BASENAME/$BASENAME/g" config/apf_run.yaml
@@ -73,6 +74,7 @@ done
 
 date
 
+popd
 # Build config Init:Error, I think the script needs update to get from a git that is reachable
 # build.build.openshift.io/buildconfig0-1   Source   Dockerfile,Git   Failed (FetchSourceFailed)   3 minutes ago   3m31s
 # Describe the build config got:
