@@ -37,6 +37,7 @@ source ./venv/bin/activate
 pip --version
 pip install --upgrade pip
 pip install -r ./requirements.txt
+oc project default
 python3 cluster-loader.py $KUBECONF -f config/apf_run.yaml -p "$PARALLEL" --debug
 deactivate
 
